@@ -1,31 +1,22 @@
-from fastapi import FastAPI
+import streamlit as st
 from models.models import chat_with_bots
-from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+st.set_page_config(page_title="Sira", page_icon="🤖")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=['GET', 'POST'],
-    allow_headers=['*']
-)
+st.title("Sira Chatbot")
 
+# Input text
+user_input = st.text_area("Enter your message:")
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+# Select model
+model_name = st.selectbox("Choose a model:", ["google", "facebook", "bart"])
 
-
-class Item(BaseModel):
-    text: str
-    model_name: str
-
-
-@app.post("/text")
-async def input_text(item: Item):
-    bot_ans = chat_with_bots(item.text, model_name=item.model_name)
-    return {
-        "message": bot_ans
-    }
+# Submit button
+if st.button("Send"):
+    if user_input.strip() == "":
+        st.warning("Please enter some text.")
+    else:
+        with st.spinner("Thinking..."):
+            reply = chat_with_bots(user_input, model_name=model_name)
+            st.success("Bot says:")
+            st.write(reply)
